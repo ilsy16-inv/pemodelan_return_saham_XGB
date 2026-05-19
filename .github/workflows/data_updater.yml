@@ -1,0 +1,53 @@
+name: Automated Stock & Sentiment Data Updater
+
+# 1. Menentukan Kapan Robot Ini Berjalan
+on:
+  schedule:
+    # Berjalan setiap hari Senin sampai Jumat jam 09.15 UTC (Jam 16.15 WIB)
+    # Bursa BEI tutup jam 16.00 WIB, jadi 16.15 adalah waktu yang aman.
+    - cron: '15 9 * * 1-5'
+  
+  # Fitur tambahan agar Anda bisa menjalankan skrip ini secara manual dari tab "Actions" di GitHub
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Langkah 1: Ambil kode terbaru dari repositori GitHub Anda
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    # Langkah 2: Siapkan lingkungan Python di server virtual GitHub
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-python: '3.10'
+        cache: 'pip' # Mempercepat proses jika library sudah pernah diinstal sebelumnya
+
+    # Langkah 3: Instal semua library yang diperlukan (yfinance, xgboost, pandas, dll)
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Langkah 4: Jalankan skrip inti Python untuk menarik data & hitung prediksi XGBoost
+    - name: Run Data Fetcher and Predictor Pipeline
+      run: |
+        python src/data_fetcher.py
+
+    # Langkah 5: Simpan kembali perubahan data (CSV atau file database baru) ke GitHub
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name "GitHub Action Bot"
+        git config --global user.email "actions@github.com"
+        
+        # Mengecek apakah ada perubahan data baru untuk di-commit
+        git add data/
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -m "Automated Data Update: $(date +'%Y-%m-%d %H:%M:%S')"
+          git push
+        else
+          echo "No changes to commit"
+        fi
