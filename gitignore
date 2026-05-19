@@ -1,0 +1,20 @@
+# Mengabaikan cache internal Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Mengabaikan folder virtual environment lokal jika Anda pakai
+venv/
+.venv/
+env/
+
+# Mengabaikan folder temporary/cache milik Jupyter Notebook
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Mengabaikan file konfigurasi lokal Streamlit
+.streamlit/config.toml
+
+# Mengabaikan file sistem operasi
+.DS_Store
+Thumbs.db
